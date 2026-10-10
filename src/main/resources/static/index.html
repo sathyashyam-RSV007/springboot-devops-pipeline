@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day &amp; Night</title>
+<style>
+  :root { --ink:#1d3557; --t:1s; --ease:cubic-bezier(.45,.05,.25,1); } /* --t = speed of the day/night change */
+  [data-theme="dark"] { --ink:#e6e9ff; }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; }
+  body { font-family:Georgia,'Times New Roman',serif; color:var(--ink); display:grid; place-items:center; overflow:hidden; transition:color var(--t); }
+
+  /* Wallpapers: two stacked layers, cross-faded */
+  .wall { position:fixed; inset:0; z-index:-1; transition:opacity var(--t) ease-in-out; }
+  .wall svg { position:absolute; bottom:0; width:100%; height:45%; }
+  .wall.day { background:radial-gradient(circle at 78% 22%,#fff6c8 0,#ffe27a 6%,transparent 22%),linear-gradient(#6ec3f4,#d8f1ff 70%,#fff3d6); }
+  .wall.night { opacity:0; background:
+      radial-gradient(circle at 22% 20%,#f4f1de 0,#f4f1de 3%,rgba(180,190,255,.35) 4%,transparent 14%),
+      radial-gradient(1.5px 1.5px at 12% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 12%,#fff,transparent),
+      radial-gradient(2px 2px at 63% 26%,#fff,transparent),radial-gradient(1.5px 1.5px at 85% 15%,#fff,transparent),
+      radial-gradient(1.5px 1.5px at 72% 48%,#fff,transparent),radial-gradient(2px 2px at 30% 55%,#fff,transparent),
+      radial-gradient(1.5px 1.5px at 92% 60%,#fff,transparent),radial-gradient(1.5px 1.5px at 8% 62%,#fff,transparent),
+      linear-gradient(#050816,#141b4d 65%,#2b2f6e); }
+  [data-theme="dark"] .wall.night { opacity:1; }
+  [data-theme="dark"] .wall.day { opacity:0; }
+
+  main { text-align:center; }
+  h1 { font-size:clamp(1.6rem,4vw,2.4rem); font-weight:400; letter-spacing:.01em; margin-bottom:2rem; }
+  p#state { margin-top:1.5rem; font-style:italic; font-size:1.1rem; }
+
+  /* The switch: a small sky window; the knob is a sun that turns into a moon */
+  .sky { position:relative; width:220px; height:100px; border-radius:50px; border:4px solid rgba(255,255,255,.85);
+         background:linear-gradient(#5fb8ee,#bfe6ff); cursor:pointer; overflow:hidden; padding:0;
+         box-shadow:0 10px 30px rgba(0,0,0,.25), inset 0 4px 12px rgba(0,0,0,.18);
+         transition:background var(--t), border-color var(--t); }
+  .sky:focus-visible { outline:3px solid #ffb703; outline-offset:5px; }
+  [data-theme="dark"] .sky { background:linear-gradient(#070b24,#262c6a); border-color:rgba(160,170,255,.5); }
+
+  .clouds { position:absolute; inset:0; transition:transform var(--t) var(--ease), opacity var(--t); }
+  .clouds i { position:absolute; background:#fff; border-radius:20px; height:18px; box-shadow:0 0 0 0 #fff; }
+  .clouds i:nth-child(1){ width:70px; right:22px; bottom:14px; } .clouds i:nth-child(2){ width:44px; right:62px; bottom:30px; }
+  .clouds i:nth-child(3){ width:54px; right:6px; bottom:40px; opacity:.8; }
+  [data-theme="dark"] .clouds { transform:translateY(90px); opacity:0; }
+
+  .stars { position:absolute; inset:0; opacity:0; transform:translateY(-40px); transition:transform var(--t) var(--ease), opacity var(--t); }
+  .stars i { position:absolute; width:4px; height:4px; background:#fff; border-radius:50%; box-shadow:0 0 6px #fff; animation:tw 2.4s infinite alternate; }
+  .stars i:nth-child(1){ left:28px; top:18px; } .stars i:nth-child(2){ left:70px; top:52px; animation-delay:.6s; }
+  .stars i:nth-child(3){ left:46px; top:70px; width:3px; height:3px; animation-delay:1.2s; } .stars i:nth-child(4){ left:104px; top:22px; animation-delay:.3s; }
+  .stars i:nth-child(5){ left:130px; top:64px; width:3px; height:3px; animation-delay:.9s; }
+  @keyframes tw { from{opacity:.4} to{opacity:1} }
+  [data-theme="dark"] .stars { opacity:1; transform:none; }
+
+  .knob { position:absolute; top:8px; left:8px; width:72px; height:72px; border-radius:50%;
+          background:radial-gradient(circle at 35% 35%,#fff7b0,#ffd23f 55%,#ff9f1c);
+          box-shadow:0 0 0 10px rgba(255,214,80,.25),0 0 0 22px rgba(255,214,80,.15),0 4px 10px rgba(0,0,0,.3);
+          transition:transform var(--t) var(--ease), background var(--t), box-shadow var(--t); }
+  .knob::before,.knob::after { content:""; position:absolute; border-radius:50%; background:rgba(120,125,170,.35); opacity:0; transition:opacity var(--t); }
+  .knob::before { width:18px; height:18px; left:14px; top:16px; } .knob::after { width:12px; height:12px; left:40px; top:42px; }
+  [data-theme="dark"] .knob { transform:translateX(120px) rotate(360deg);
+          background:radial-gradient(circle at 35% 35%,#ffffff,#dfe3f5 60%,#b4bbdc);
+          box-shadow:0 0 0 10px rgba(200,210,255,.15),0 0 0 22px rgba(200,210,255,.08),0 4px 10px rgba(0,0,0,.5); }
+  [data-theme="dark"] .knob::before,[data-theme="dark"] .knob::after { opacity:1; }
+
+  @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; } } /* star twinkle off; --t still controls the switch speed */
+</style>
+</head>
+<body>
+  <div class="wall day"><svg viewBox="0 0 800 200" preserveAspectRatio="none"><path d="M0 120 Q150 40 300 110 T600 90 T800 120 V200 H0Z" fill="#9bd48a"/><path d="M0 160 Q200 90 400 150 T800 140 V200 H0Z" fill="#5fae5a"/></svg></div>
+  <div class="wall night"><svg viewBox="0 0 800 200" preserveAspectRatio="none"><path d="M0 120 Q150 40 300 110 T600 90 T800 120 V200 H0Z" fill="#171d4a"/><path d="M0 160 Q200 90 400 150 T800 140 V200 H0Z" fill="#0a0e2a"/></svg></div>
+
+  <main>
+    <h1>Pick your sky</h1>
+    <button class="sky" id="sw" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+      <span class="clouds"><i></i><i></i><i></i></span>
+      <span class="stars"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="knob"></span>
+    </button>
+    <p id="state">Daytime</p>
+  </main>
+
+<script>
+  const root = document.documentElement, sw = document.getElementById('sw'), label = document.getElementById('state');
+  function apply(theme) {
+    root.dataset.theme = theme;
+    sw.setAttribute('aria-checked', theme === 'dark');
+    label.textContent = theme === 'dark' ? 'Nighttime' : 'Daytime';
+    try { localStorage.setItem('theme', theme); } catch (e) {}
+  }
+  let saved = null; try { saved = localStorage.getItem('theme'); } catch (e) {}
+  apply(saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  sw.addEventListener('click', () => apply(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+</script>
+</body>
+</html>
