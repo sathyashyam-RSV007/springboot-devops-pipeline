@@ -24,3 +24,10 @@ Every `git push` to GitHub triggers a Jenkins build that compiles, tests and pac
 - Poll SCM (works on a local VM)
 - In the Jenkins job, tick Poll SCM
 - Schedule: `* * * * *` (checks GitHub every minutes)
+
+## Phase 5: Dockerize the Application
+
+- Install Docker on the Ubuntu and give your user and Jenkins access to it
+- Add a Dockerfile (Java 21 JRE + `darkmode-1.0.0.jar`) in the project root
+- Build the image `springboot-darkmode:1.0` from the Dockerfile
+- Run the container with port 8081 mapped to 8080 and test at `http://localhost:8081`
