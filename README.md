@@ -5,7 +5,7 @@
 ![Maven](https://img.shields.io/badge/Apache_Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)
 ![Jenkins](https://img.shields.io/badge/Jenkins_CI/CD-D24939?style=for-the-badge&logo=jenkins&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Ubuntu](https://img.shields.io/badge/Ubuntu_VM-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 
 A lightweight **Java Spring Boot** web application with an animated toggle switch that flips the entire page between **daytime** and **nighttime**, automated end-to-end with a **Continuous Integration and Continuous Deployment (CI/CD)** pipeline using **Git, GitHub, Maven, Jenkins, Docker, and Docker Hub**.
 
@@ -27,10 +27,10 @@ A lightweight **Java Spring Boot** web application with an animated toggle switc
 
 ## 🚀 DevOps CI/CD Architecture
 
-Every code push to GitHub automatically triggers a 6-stage pipeline inside Jenkins running on an Ubuntu Desktop VirtualBox VM.
+Every code push to GitHub automatically triggers a 6-stage pipeline inside Jenkins running on an Ubuntu Desktop
 
 ```text
-[Developer (VS Code on Ubuntu Desktop VM)]
+[Developer (VS Code on Ubuntu Desktop)]
        │
        ▼  1. git push
 [GitHub Repository: sathyashyam-RSV007/springboot-devops-pipeline]
@@ -51,19 +51,6 @@ Every code push to GitHub automatically triggers a 6-stage pipeline inside Jenki
 
 ---
 
-## 🔄 CI/CD Pipeline Stages Breakdown
-
-| Stage | Phase Type | Command Executed | Purpose |
-| :--- | :--- | :--- | :--- |
-| **1. Compile Code** | **Continuous Integration (CI)** | `mvn clean compile` | Removes previous build output and compiles the Java source code. |
-| **2. Run Tests** | **Continuous Integration (CI)** | `mvn test` | Runs automated unit tests and stops the pipeline immediately if any test fails. |
-| **3. Package JAR** | **Continuous Integration (CI)** | `mvn package -DskipTests` | Packages the compiled code and dependencies into `target/darkmode-1.0.0.jar`. |
-| **4. Build Docker Image** | **CI / CD Boundary** | `docker build -t $IMAGE_NAME:$BUILD_NUMBER -t $IMAGE_NAME:latest .` | Packages the Spring Boot JAR and Java 21 JRE into a versioned container image. |
-| **5. Push to Docker Hub** | **Continuous Delivery (CD)** | `docker push $IMAGE_NAME:$BUILD_NUMBER` | Authenticates using encrypted Jenkins credentials and pushes images to Docker Hub. |
-| **6. Deploy Application** | **Continuous Deployment (CD)** | `docker run -d --name darkmode-container -p 8081:8080 ...` | Replaces the previous container, starts the new container on port `8081`, and prunes old layers. |
-
----
-
 ## 🛠️ Tech Stack & Environment
 
 * **Application:** Java 21, Spring Boot
@@ -72,7 +59,7 @@ Every code push to GitHub automatically triggers a 6-stage pipeline inside Jenki
 * **CI/CD Automation:** Jenkins LTS (`Jenkinsfile` Pipeline-as-Code with Poll SCM trigger)
 * **Containerization:** Docker Engine (`Dockerfile` based on `eclipse-temurin:21-jre`)
 * **Container Registry:** Docker Hub (`<your-dockerhub-username>/springboot-darkmode`)
-* **Infrastructure:** Ubuntu Desktop VM on Oracle VirtualBox (NAT networking with SSH Port Forwarding)
+* **Operating System:** Ubuntu Desktop
 
 ---
 
@@ -108,8 +95,8 @@ Open `http://localhost:8080` in your browser.
 
 ### 2. Run with Docker
 ```bash
-docker pull <your-dockerhub-username>/springboot-darkmode:latest
-docker run -d -p 8081:8080 --name darkmode-container <your-dockerhub-username>/springboot-darkmode:latest
+docker pull sathyahub123/springboot-darkmode:latest
+docker run -d -p 8081:8080 --name darkmode-container sathyahub123/springboot-darkmode:latest
 ```
 Open `http://localhost:8081` in your browser.
 
