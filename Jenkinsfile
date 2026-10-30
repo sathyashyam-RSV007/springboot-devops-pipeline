@@ -44,5 +44,22 @@ pipeline {
                 sh 'docker image prune -f'
             }
         }
+        stage('Verify Deployment Health') {
+            steps {
+                sh '''
+                    for i in 1 2 3 4 5 6; do
+                        sleep 5
+                        if curl -s http://localhost:8081/actuator/health | grep -q '"status":"UP"'; then
+                            echo "Container is UP and healthy!"
+                            exit 0
+                        fi
+                        echo "Waiting for application startup (attempt $i)..."
+                    done
+                    echo "Deployment health check failed!"
+                    docker logs --tail 30 $CONTAINER_NAME
+                    exit 1
+                '''
+            }
+        }
     }
 }
