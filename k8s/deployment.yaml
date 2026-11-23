@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pick-your-sky
+  labels:
+    app: pick-your-sky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pick-your-sky
+  template:
+    metadata:
+      labels:
+        app: pick-your-sky
+    spec:
+      containers:
+        - name: pick-your-sky
+          image: sathyahub123/springboot-darkmode:latest 
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx256m"
+          resources:
+            requests:
+              memory: "192Mi"
+              cpu: "100m"
+            limits:
+              memory: "384Mi"
+              cpu: "500m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 24
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 15
+            failureThreshold: 3

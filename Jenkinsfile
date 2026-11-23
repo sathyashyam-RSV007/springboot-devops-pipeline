@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "sathyahub123/springboot-darkmode"
         CONTAINER_NAME = "darkmode-container"
+        KUBECONFIG = "/var/lib/jenkins/.kube/config"
     }
 
     stages {
@@ -35,29 +36,22 @@ pipeline {
                     sh 'docker push $IMAGE_NAME:latest'
                     sh 'docker logout'
                 }
-            }
-        }
-        stage('Deploy Application') {
-            steps {
-                sh 'docker rm -f $CONTAINER_NAME || true'
-                sh 'docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 8081:8080 $IMAGE_NAME:$BUILD_NUMBER'
+                sh 'docker rmi $IMAGE_NAME:$BUILD_NUMBER || true'
                 sh 'docker image prune -f'
             }
         }
-        stage('Verify Deployment Health') {
+        stage('Deploy to K3s') {
+            steps {
+                sh 'kubectl apply -f k8s/service.yaml'
+                sh 'sed "s|:latest|:${BUILD_NUMBER}|g" k8s/deployment.yaml | kubectl apply -f -'
+            }
+        }
+        stage('Verify K3s Rollout & Health') {
             steps {
                 sh '''
-                    for i in 1 2 3 4 5 6; do
-                        sleep 5
-                        if curl -s http://localhost:8081/actuator/health | grep -q '"status":"UP"'; then
-                            echo "Container is UP and healthy!"
-                            exit 0
-                        fi
-                        echo "Waiting for application startup (attempt $i)..."
-                    done
-                    echo "Deployment health check failed!"
-                    docker logs --tail 30 $CONTAINER_NAME
-                    exit 1
+                    kubectl rollout status deployment/pick-your-sky --timeout=180s
+                    curl -sf http://localhost:30081/actuator/health | grep -q '"status":"UP"'
+                    echo "K3s rollout complete and application is UP!"
                 '''
             }
         }
