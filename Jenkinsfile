@@ -46,12 +46,22 @@ pipeline {
                 sh 'sed "s|:latest|:${BUILD_NUMBER}|g" k8s/deployment.yaml | kubectl apply -f -'
             }
         }
-        stage('Verify K3s Rollout & Health') {
+	stage('Verify K3s Rollout & Health') {
             steps {
                 sh '''
                     kubectl rollout status deployment/pick-your-sky --timeout=180s
-                    curl -sf http://localhost:30081/actuator/health | grep -q '"status":"UP"'
-                    echo "K3s rollout complete and application is UP!"
+                    for i in 1 2 3 4 5 6; do
+                        if curl -sf http://localhost:30081/actuator/health | grep -q '"status":"UP"'; then
+                            echo "K3s rollout complete and application is UP!"
+                            exit 0
+                        fi
+                        echo "Waiting for NodePort 30081 endpoint sync (attempt $i)..."
+                        sleep 3
+                    done
+                    echo "Health check failed after 6 attempts. Raw response:"
+                    curl -i http://localhost:30081/actuator/health || true
+                    kubectl describe pod -l app=pick-your-sky | tail -n 20
+                    exit 1
                 '''
             }
         }
