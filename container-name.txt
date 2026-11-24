@@ -1,0 +1,1 @@
+sathyahub123/springboot-darkmode:latest
